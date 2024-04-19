@@ -19,7 +19,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://git.cimeq.qc.ca/json.git"
+    "url": "https://git.cimeq.qc.ca/GitHub/json.git"
   },
   "homepage": "https://nlohmann.github.io/json/",
   "license": "MIT",
