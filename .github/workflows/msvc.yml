@@ -52,15 +52,15 @@ jobs:
           # Ruleset file that will determine what checks will be run
           ruleset: NativeRecommendedRules.ruleset
 
-      - name: Patch SARIF for GitHub upload
-        shell: pwsh
-        run: |
-          $sarif = Get-Content "${{ steps.run-analysis.outputs.sarif }}" -Raw | ConvertFrom-Json
-          $i = 0
-          foreach ($run in $sarif.runs) { $run.properties.category = "run-$i"; $i++ }
-          $sarif | ConvertTo-Json -Depth 100 | Out-File -Encoding utf8 "${{ env.build }}/results_fixed.sarif"
+      # Upload SARIF file to GitHub Code Scanning Alerts
+      #- name: Upload SARIF to GitHub
+      #  uses: github/codeql-action/upload-sarif@v3
+      #  with:
+      #    sarif_file: ${{ steps.run-analysis.outputs.sarif }}
 
-      - name: Upload SARIF to GitHub
-        uses: github/codeql-action/upload-sarif@v3
+      # Upload SARIF file as an Artifact to download and view
+      - name: Upload SARIF as an Artifact
+        uses: actions/upload-artifact@v4
         with:
-          sarif_file: ${{ env.build }}/results_fixed.sarif
+          name: sarif-file
+          path: ${{ steps.run-analysis.outputs.sarif }}
