@@ -52,15 +52,38 @@ jobs:
           # Ruleset file that will determine what checks will be run
           ruleset: NativeRecommendedRules.ruleset
 
+      - name: Patch SARIF with unique categories
+        shell: pwsh
+        run: |
+          $sarifPath = "${{ steps.run-analysis.outputs.sarif }}"
+          $outputPath = "${{ env.build }}\results_fixed.sarif"
+          
+          $sarif = Get-Content $sarifPath -Raw | ConvertFrom-Json
+          
+          for ($i = 0; $i -lt $sarif.runs.Count; $i++) {
+            $run = $sarif.runs[$i]
+          
+            # Ensure properties exists
+            if ($null -eq $run.PSObject.Properties['properties']) {
+              $run | Add-Member -NotePropertyName 'properties' -NotePropertyValue @{}
+            }
+          
+            # Add or overwrite category
+            $run.properties['category'] = "run-$i"
+          }
+          
+          $sarif | ConvertTo-Json -Depth 200 | Set-Content -Encoding utf8 $outputPath
+          Write-Host "✅ Wrote patched SARIF to $outputPath"
+
       # Upload SARIF file to GitHub Code Scanning Alerts
-      #- name: Upload SARIF to GitHub
-      #  uses: github/codeql-action/upload-sarif@v3
-      #  with:
-      #    sarif_file: ${{ steps.run-analysis.outputs.sarif }}
+      - name: Upload SARIF to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ env.build }}/results_fixed.sarif
 
       # Upload SARIF file as an Artifact to download and view
-      - name: Upload SARIF as an Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sarif-file
-          path: ${{ steps.run-analysis.outputs.sarif }}
+      #- name: Upload SARIF as an Artifact
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: sarif-file
+      #    path: ${{ steps.run-analysis.outputs.sarif }}
