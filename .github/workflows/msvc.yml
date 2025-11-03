@@ -72,7 +72,7 @@ jobs:
             $run.properties['category'] = "run-$i"
           }
           
-          $sarif | ConvertTo-Json -Depth 200 | Set-Content -Encoding utf8 $outputPath
+          $sarif | ConvertTo-Json -Depth 100 | Set-Content -Encoding utf8 $outputPath
           Write-Host "✅ Wrote patched SARIF to $outputPath"
 
       # Upload SARIF file to GitHub Code Scanning Alerts
